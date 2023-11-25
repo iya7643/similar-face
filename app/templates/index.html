@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="d-flex justify-content-end">
+        <button type="button" class="btn btn-primary" id="show_dialog_button">顔画像を登録する</button>
+    </div>
+
+    <dialog class="w-75 h-75 p-5 card border shadow-lg bg-body-tertiary rounded d-none">
+        <form action="/" method="post" enctype="multipart/form-data" class="row g-5">
+            <div class="col-12">
+                <label for="face_image" class="form-label">顔画像</label>
+                <input class="form-control" type="file" accept=".jpg,image/png" id="face_image" name="face_image"/>
+            </div>
+            <div class="col-12">
+                <label for="face_name" class="form-label">氏名</label>
+                <input class="form-control" type="text" id="face_name" name="face_name"/>
+            </div>
+            <div class="col-12 d-flex justify-content-center gap-5">
+                <button type="submit" class="btn btn-outline-primary">登録する</button>
+                <button type="button" class="btn btn-outline-secondary" id="close_dialog_button">閉じる</button>
+            </div>
+        </form>
+    </dialog>
+
+    <div class="card border mt-3 px-5 py-3">
+        <form action="" method="get" class="row g-3">
+            <div class="col-12">
+                <label for="name_input" class="form-label">氏名</label>
+                <input type="text" class="form-control" name="face_name" id="name_input" value="{{ session['face_name'] }}" />
+            </div>
+            <div class="col-12 d-flex justify-content-center gap-3">
+                <button type="submit" class="btn btn-outline-primary" id="search_button">検索する</button>
+                <button type="submit" class="btn btn-outline-success" id="similar_button">似てる人Top4を表示する</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card border mt-3 px-5 py-3">
+        {% if is_similar and faces[0] %}
+        <div class="row row-gap-3 pt-3">
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <img src="data:image/{{ faces[0].image_extension }};base64,{{ faces[0].image }}" alt="{{ faces[0].name }}">
+                    <div class="card-body">
+                        <p class="card-title">{{ faces[0].name }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row row-gap-3 {% if is_similar and faces|length > 0 %}py-5{% else %}py-3{% endif %}">
+            {% if is_similar and faces|length > 0 %}
+            <div class="col-12">似てる人Top4</div>
+            {% endif %}
+
+            {% for face in faces %}
+            {% if not (is_similar and loop.index0 == 0) %}
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <img src="data:image/{{ face.image_extension }};base64,{{ face.image }}" alt="{{ face.name }}">
+                    <div class="card-body">
+                        <p class="card-title">{{ face.name }}</p>
+                        {% if face.similarity %}
+                        <p>類似度: {{ face.similarity|round(3) }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+
+            {% if faces|length == 0 %}
+            <div class="col-12">
+                検索条件に該当するデータは登録されていません。
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('#show_dialog_button').addEventListener('click', function() {
+                const dialog = document.querySelector('dialog');
+                dialog.classList.remove('d-none');
+                dialog.showModal();
+            });
+
+            document.querySelector('#close_dialog_button').addEventListener('click', function() {
+                const dialog = document.querySelector('dialog');
+                dialog.classList.add('d-none');
+                dialog.close();
+            });
+
+            document.querySelector('#search_button').addEventListener('click', function() {
+                const form = document.querySelector('#search_button').closest('form');
+                form.action = '/search';
+                form.submit();
+            });
+
+            document.querySelector('#similar_button').addEventListener('click', function() {
+                const form = document.querySelector('#similar_button').closest('form');
+                form.action = '/similar';
+                form.submit();
+            });
+        });
+    </script>
+
+{% endblock %}
