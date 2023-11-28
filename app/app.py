@@ -14,7 +14,7 @@ app.secret_key = 'suzuki.hisashi@rococo.co.jp'
 
 face_repository = repositories.Face()
 
-mtcnn = MTCNN(image_size=1024, margin=0)
+mtcnn = MTCNN(image_size=160, margin=10)
 resnet = InceptionResnetV1(pretrained='vggface2').eval()
 
 
